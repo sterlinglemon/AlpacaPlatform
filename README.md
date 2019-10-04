@@ -32,6 +32,7 @@ Finally, visit localhost:3000 in a web browser. You should see something like th
 
 * [NodeJS](https://nodejs.org) - The web framework
 * [Alpaca](https://alpaca.markets/) - The API for stock trading
+* [TradingView](https://www.tradingview.com/) - The wonderful lightweight chart library
 
 ## Contributing
 
