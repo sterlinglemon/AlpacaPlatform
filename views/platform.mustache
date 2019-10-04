@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en" style="font-size:1.35vh; height: 100%;">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Alpaca Platform</title>
+    <link rel="stylesheet" href="/css/vendor.bundle.base.css">
+    <link rel="stylesheet" href="/css/vendor.bundle.addons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="shortcut icon" href="images/logo.png" />
+    <style>
+        .card-body {
+            padding: 1rem;
+        }
+    </style>
+    <script>
+      function orderTypeChanged(){
+          orderType = document.getElementById('submit_order_type').value;
+          if (orderType == "limit") {
+              $('#limit_price').removeAttr('disabled');
+              $('#stop_price').attr({
+                  'disabled': 'disabled'
+              });
+          }
+          else if (orderType == "stop_limit") {
+              $('#limit_price').removeAttr('disabled');
+              $('#stop_price').removeAttr('disabled');
+          }
+          else if (orderType == "stop") {
+              $('#stop_price').removeAttr('disabled');
+              $('#limit_price').attr({
+                  'disabled': 'disabled'
+              });
+          }
+          else {
+              $('#stop_price').attr({
+                  'disabled': 'disabled'
+              });
+              $('#limit_price').attr({
+                  'disabled': 'disabled'
+              });
+          }
+      }
+    </script>
+  </head>
+  <body class="sidebar-icon-only" style="height: 100vh;min-height: 100%;">
+    <div class="container-scroller">
+      <nav class="navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
+        <div class="text-center navbar-brand-wrapper d-flex align-items-center justify-content-center">
+          <a class="navbar-brand brand-logo" href="/"><img src="images/logo.png" alt="logo" /></a>
+          <a class="navbar-brand brand-logo-mini" href="/"><img src="images/logo.png" style="width:42px; height:42px;" alt="logo" /></a>
+        </div>
+        <div class="navbar-menu-wrapper d-flex align-items-stretch">
+          <ul class="navbar-nav w-100">
+            <li class="nav-item w-100">
+                <div class="nav-link mt-2 mt-md-0 d-none d-lg-flex search">
+                    <input type="text" name="symbolSearch" id="symbolSearch" class="form-control" placeholder="Search Symbol...">
+                </div>
+            </li>
+          </ul>
+          <ul class="navbar-nav navbar-nav-right">
+            <li class="nav-item" style="width:23vh; font-size: 1rem;">
+              Portfolio Value $ <span id="portfolioValue" style="color:green;font-weight:900;"></span><br>
+              Markets are <span id="marketStatus"></span>
+            </li>
+
+            <li class="nav-item dropdown border-left">
+              <a class="nav-link count-indicator dropdown-toggle" href="/logout">
+                <i class="mdi mdi-door-open"></i>
+              </a>
+            </li>
+          </ul>
+          <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
+            <span class="mdi mdi-format-line-spacing"></span>
+          </button>
+        </div>
+      </nav>
+      <div class="container-fluid page-body-wrapper" style="height:100vh;">
+        <div class="main-panel" style="width:100%;">
+          <div class="content-wrapper" style="height:100vh; padding:0.5rem;">
+            <div class="row" style="height: 53.5vh;">
+              <div class="col-lg-9 grid-margin stretch-card">
+                <div class="d-xs-flex d-sm-flex d-md-none card" style="height: 29vh;">
+                    <div class="card" style="height: 29vh;">
+                      <div class="card-body">
+                        <h4 class="card-title">SPY</h4>
+                        <canvas id="areaChart"  style="height: 2%;"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                <div class="card d-none d-lg-flex d-xl-flex d-md-flex" style="height: 52vh;">
+                  <div class="card-body" style="padding:0px;">
+                    <style>
+                      .btn-group button {
+                        background-color: #191c20; /* Green background */
+                        border: none; /* Green border */
+                        color: white; /* White text */
+                        padding: 8px 8px; /* Some padding */
+                        cursor: pointer; /* Pointer/hand icon */
+                        float: left; /* Float the buttons side by side */
+                      }
+
+                      /* Clear floats (clearfix hack) */
+                      .btn-group:after {
+                        content: "";
+                        clear: both;
+                        display: table;
+                      }
+
+                      /* Add a background color on hover */
+                      .btn-group button:hover {
+                        background-color: #2e2f32;
+                      }
+
+                      button.active {
+                      	color: #d7bf50;
+                      }
+
+                      .btn-group {
+                      	border: none;
+                        z-index:3;
+                      }
+                    </style>
+                    <div class="btn-group">
+                      <button id="1mButton" onclick="changeStockGranularity('1m')">1m</button>
+                      <button id="15mButton" onclick="changeStockGranularity('15m')">15m</button>
+                      <button id="1hButton" onclick="changeStockGranularity('1h')">1h</button>
+                      <button id="1dButton" onclick="changeStockGranularity('1d')">1d</button>
+                    </div>
+                      <div id="stock_chart" style="width: 100%; height: 52vh; position:absolute; top:0;"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-3 d-sm-12 grid-margin stretch-card">
+                <div class="card" style="height: 52vh;">
+                    <div class="d-flex justify-content-between" style="padding-left:15px; padding-right:15px;">
+                        <div>
+                          <span id="order-Ticker" style="font-weight:strong; font-size:5rem; color:#d7bf50;">---</span>
+                        </div>
+                        <div>
+                          <span id="order-Price" style="font-weight:strong; font-size:5rem; color:#FFF; margin-right:0;">$--.--</span>
+                        </div>
+                   </div>
+                   <div class="card-body" style="margin-top:-15px;">
+                    <h4 class="card-title">Place Order</h4>
+                    <form class="forms-sample" action="/" method="POST">
+                      <div class="form-group">
+                        <label>Type</label>
+                        <select class="form-control" id="submit_order_type" name="submit_order_type" onchange="orderTypeChanged()">
+                          <option value="market">Market</option>
+                          <option value="limit">Limit</option>
+                          <option value="stop">Stop</option>
+                          <option value="stop_limit">Stop Limit</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" class="form-control" id="submit_order_quantity" name="submit_order_quantity" placeholder="Quantity">
+                      </div>
+                      <div class="form-group">
+                        <label for="quantity">Limit Price</label>
+                        <input type="number" class="form-control" disabled id="limit_price" name="submit_order_limit_price" placeholder="Limit Price">
+                      </div>
+                      <div class="form-group">
+                        <label for="quantity">Stop Price</label>
+                        <input type="number" class="form-control" disabled id="stop_price" name="submit_order_stop_price" placeholder="Stop Price">
+                      </div>
+                      <br>
+                      <div class="row">
+                          <div class="col-6">
+                              <a href="javascript:void(0);" onClick="PlaceOrder('buy')" class="btn btn-success mr-2" style="height: 100%; width: 100%; font-size:2.5rem; color:#c2c2c2;">Buy</a>
+                          </div>
+                          <div class="col-6">
+                              <a href="javascript:void(0);" onClick="PlaceOrder('sell')" class="btn btn-danger" style="height: 100%; width: 100%; font-size:2.5rem; color:#c2c2c2;">Sell</a>
+                          </div>
+                      </div>
+                    </form>
+                    <div id="orderResults">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            <div class="d-none d-lg-flex d-xl-flex row" style="height:0vh;">
+              <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card" style="height: 34vh;">
+                  <div class="card-body" style="overflow: hidden;">
+                    <h4 class="card-title">Orders    <label class="badge badge-danger">Cancel All</label></h4>
+                    <div style="width: 110%;height: 100%;overflow-y: scroll;padding-right: 17px;">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Symbol</th>
+                            <th>Shares</th>
+                            <th>Side</th>
+                            <th>Type</th>
+                            <th>Order Type</th>
+                            <th>Limit Price</th>
+                            <th>Stop Price</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody id="ordersTable"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-lg-6 grid-margin stretch-card">
+                <div class="card" style="height: 34vh;">
+                  <div class="card-body" style="overflow: hidden;">
+                    <h4 class="card-title">Positions    <label class="badge badge-danger">Liquidate</label></h4>
+                    <div style="width: 110%;height: 100%;overflow-y: scroll;padding-right: 17px;">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th>Shares</th>
+                            <th>Market Value</th>
+                            <th>Total P/L</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody id="positionsTable"></tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <footer class="footer" style="padding:0.5rem; z-index: 0;">
+                <div class="container-fluid clearfix">
+                    <span class="text-muted d-block text-center text-sm-left d-sm-inline-block">Copyright © 2019. All rights reserved.</span>
+                </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+    </div>
+    <script src="/js/vendor.bundle.base.js"></script>
+    <script src="/js/vendor.bundle.addons.js"></script>
+    <script src="/js/lightweight-charts.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript">
+      var socket = io.connect();
+      var stockTimeDif = 60;
+      var candleData = [];
+      var volumeData = [];
+
+      function PlaceOrder(side){  
+        var orderData = {
+          symbol: document.getElementById("order-Ticker").innerHTML,
+          qty: document.getElementById("submit_order_quantity").value,
+          side: side,
+          type: document.getElementById("submit_order_type").value,
+          time_in_force: 'day',
+          limit_price: document.getElementsByName("submit_order_limit_price")[0].value,
+          stop_price: document.getElementsByName("submit_order_stop_price")[0].value
+        };
+        if (orderData.Quantity == '') {
+          document.getElementById("orderResults").innerHTML = "Please enter a quantity.";
+        }
+        else {
+          socket.emit('placeOrder', orderData);
+        }
+      }
+
+      function CancelOrder(orderID){
+        var order = document.getElementById('order-'+orderID);
+        order.className = "btn btn-inverse-secondary";
+        order.innerHTML= "Canceling";
+        order.style.fontSize = "0.625rem";
+        order.style.color = "#FFF";
+        socket.emit('cancelOrder', orderID);
+      }
+
+      var searchBox = document.getElementById('symbolSearch');
+      searchBox.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            socket.emit('setTicker', searchBox.value);
+            socket.emit('platform', 'getHistoricData');
+        }
+      });
+
+      function changeStockGranularity(granularity){
+        $("#1mButton").removeClass("active");
+        $("#15mButton").removeClass("active");
+        $("#1hButton").removeClass("active");
+        $("#1dButton").removeClass("active");
+        $('#'+granularity+'Button').addClass("active");
+
+        if (granularity == "1m"){
+          stockTimeDif = 60;
+        }
+        else if (granularity == "15m"){
+          stockTimeDif = 900;
+        }
+        else if (granularity == "1h"){
+          stockTimeDif = 3600;
+        }
+        else if (granularity == "1d"){
+          stockTimeDif = 86400;
+        }
+        //$("#stock_chart")[0].innerHTML = '<span style="margin-left: 2.6vw;">Loading...</span>';
+        socket.emit('setGranularity', granularity);
+        socket.emit('platform', 'getHistoricData');
+      }
+      changeStockGranularity('{{granularity}}');
+      
+      socket.on('connect', function(data) {
+        socket.emit('platform', 'getPortfolioValue');
+        socket.emit('platform', 'getClock');
+        socket.emit('platform', 'getOrders');
+        socket.emit('platform', 'getPositions');
+        socket.emit('setTicker', '{{currentTicker}}');
+        socket.emit('platform', 'getHistoricData');
+      });
+
+      socket.on('disconnected', function(data) {
+        alert("Disconnected. Check connection or API Key!");
+        //window.location.replace("/");
+      });
+
+      socket.on('updateOrders', function(data) {
+        $('#ordersTable').html('');
+        data.forEach(function(order) {
+          if (order.status == "filled"){
+            var status = '<label class="badge badge-success">'+order.status+'</label>';
+          }
+          else if (order.status == "canceled") {
+            var status = '<label class="badge badge-danger">'+order.status+'</label>';
+          }
+          else {
+            var status = '<a href="javascript:void(0);""><label id="order-'+order.id+'" onClick="CancelOrder(\''+order.id+'\')" class="badge badge-warning">'+order.status+'</label></a>';
+          }
+
+          $('#ordersTable').append('<tr>');
+          $('#ordersTable').append('    <td>'+order.symbol+'</td>');
+          $('#ordersTable').append('    <td>'+order.qty+'</td>');
+          $('#ordersTable').append('    <td>'+order.filled_qty+'</td>');
+          $('#ordersTable').append('    <td>'+order.side+'</td>');
+          $('#ordersTable').append('    <td>'+order.order_type+'</td>');
+          $('#ordersTable').append('    <td>'+Number(order.limit_price).toFixed(2)+'</td>');
+          $('#ordersTable').append('    <td>'+Number(order.stop_price).toFixed(2)+'</td>');
+          $('#ordersTable').append('    <td>'+status+'</td>');
+          $('#ordersTable').append('</tr>');
+        });
+      }); 
+
+      socket.on('updatePositions', function(data) {
+        $('#positionsTable').html('');
+        data.forEach(function(position) {
+          if (position.unrealized_pl > 0){
+            var color = "success";
+            var arrow = "up";
+          }
+          else {
+            var color = "danger";
+            var arrow = "down";
+          }
+          $('#positionsTable').append('<tr>');
+          $('#positionsTable').append('    <td>'+position.symbol+'</td>');
+          $('#positionsTable').append('    <td>'+Number(position.avg_entry_price).toFixed(2)+'</td>');
+          $('#positionsTable').append('    <td>'+position.qty+'</td>');
+          $('#positionsTable').append('    <td>'+Number(position.market_value).toFixed(2)+'</td>');
+          $('#positionsTable').append('    <td class="text-'+color+'">'+Number(position.unrealized_pl).toFixed(2)+' <i class="mdi mdi-arrow-'+arrow+'"></i></td>');
+          $('#positionsTable').append('    <td><label class="badge badge-danger">Close</label></td>');
+          $('#positionsTable').append('</tr>');
+        });
+      });
+
+      socket.on('updatePortfolioValue', function(data) {
+        $('#portfolioValue').append(data);
+      });
+
+      socket.on('updateClock', function(data) {
+        if (data.is_open){
+          $('#marketStatus').css('color','green');
+          $('#marketStatus').html('Open');
+        }
+        else {
+          $('#marketStatus').css('color','red');
+          $('#marketStatus').html('Closed');
+        }
+      });
+
+      socket.on('updateLivePrice', function(data) {
+        document.getElementById("order-Ticker").innerHTML = data.symbol;
+        document.getElementById("order-Price").innerHTML = Number(data.price).toFixed(2);
+      });
+
+      socket.on('updateStockChart', function(data) {
+        data.t = data.t/1000
+        let lastCandle = candleData[candleData.length - 1];
+        if (lastCandle){
+          let lastVolume = volumeData[volumeData.length - 1];
+          let newTimeDif = data.t - lastCandle.time;
+
+          let candleToAdd = {
+            open: data.o,
+            high: data.h,
+            low: data.l,
+            close: data.c,
+            time: data.t
+          };
+          let volumeToAdd = {
+            value: data.v,
+            time: data.t,
+            color: getVolumeColor(data.o, data.c)
+          };
+
+          if (newTimeDif > stockTimeDif){
+            candleToAdd.time = lastCandle.time + stockTimeDif;
+            volumeToAdd.time = lastCandle.time + stockTimeDif;
+            candleData.push(candleToAdd);
+            volumeData.push(volumeToAdd);
+          }
+          else {
+
+            lastCandle.close = candleToAdd.close;
+            if (lastCandle.close > lastCandle.high){
+              lastCandle.high = lastCandle.close;
+            }
+            else if (lastCandle.close < lastCandle.low){
+              lastCandle.low = lastCandle.close;
+            }
+
+            lastVolume.value += volumeToAdd.value;
+            lastVolume.color = getVolumeColor(lastCandle.open, lastCandle.close);
+            candleSeries.update(lastCandle);
+            volumeSeries.update(lastVolume);
+          }
+        }
+        
+      });
+
+      function timeFormat(time){
+        return moment.unix(time).format('Do hh:mm a');
+      }
+      function updateCharts(){
+        candleSeries.setData(candleData);
+        volumeSeries.setData(volumeData);
+      }
+      
+      var chart = LightweightCharts.createChart(document.getElementById('stock_chart'), {
+        priceScale: {
+          scaleMargins: {
+            top: 0.3,
+            bottom: 0.25,
+          },
+          borderVisible: false,
+        },
+        layout: {
+          backgroundColor: '#191c20',
+          textColor: '#d1d4dc',
+        },
+        grid: {
+          vertLines: {
+            color: 'rgba(42, 46, 57, 0)',
+          },
+          horzLines: {
+            color: 'rgba(42, 46, 57, 0.6)',
+          },
+        },
+        //If 1d granularity
+        timeScale: {
+          timeVisible: true,
+          secondsVisible: false,
+        },
+        localization: {
+          timeFormatter: timeFormat
+        }
+      });
+
+      var candleSeries = chart.addCandlestickSeries();
+      var volumeSeries = chart.addHistogramSeries({
+        color: '#26a69a',
+        lineWidth: 2,
+        priceFormat: {
+          type: 'volume',
+        },
+        priceLineVisible: false,
+        overlay: true,
+        scaleMargins: {
+          top: 0.8,
+          bottom: 0,
+        }
+      });
+
+      function getVolumeColor (open, close){
+        if (open > close){
+          return 'rgba(255,82,82, 0.8)';
+        }
+        else {
+          return 'rgba(0, 150, 136, 0.8)';
+        }
+      }
+
+      socket.on('updateHistoricData', function(data) {
+        candleData = data.map(item => {
+          return {
+            open: item.o,
+            high: item.h,
+            low: item.l,
+            close: item.c,
+            time: item.t/1000,
+          };
+        });
+        volumeData = data.map(item => {
+          return {
+            value: item.v,
+            time: item.t/1000,
+            color: getVolumeColor(item.o,item.c)
+          };
+        });
+
+        candleSeries.setData(candleData);
+        volumeSeries.setData(volumeData);
+        
+      });
+
+    </script>
+  </body>
+</html>
