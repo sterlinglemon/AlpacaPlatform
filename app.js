@@ -22,8 +22,8 @@ io.use(sharedsession(session, {
 }));
 
 app.use('/', function(req, res) {
-    req.session.Alpaca_Key_ID = 'PKZ9KDNHZ85XBSKDECTN';
-    req.session.Alpaca_Secret_ID= 'C7jvnfF6sJUoJPIdJ3T33ovGgQIC1CJwE0OysibD';
+    req.session.Alpaca_Key_ID = 'YOUR KEY';
+    req.session.Alpaca_Secret_ID= 'YOUR SECRET';
     req.session.IsSandboxMode= true;
     req.session.granularity= '1m';
     req.session.currentTicker= 'SPY';
